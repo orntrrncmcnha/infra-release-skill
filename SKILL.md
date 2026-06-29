@@ -1,94 +1,100 @@
 ---
 name: infra-release
-description: Use ao fechar um board Jira em ciclos de release — gera uma página de release para stakeholders no Confluence (rascunho) a partir dos cards concluídos, um roadmap do que está em andamento/selecionado, e um anúncio de Slack para postar manualmente. Read-only no Jira; faz um setup interativo na primeira vez (board, status, espaço Confluence).
+description: Use when closing out a Jira board in release cycles — generates a stakeholder release page in Confluence (as a draft) from completed cards, a roadmap of in-progress/selected work, and a Slack announcement to post manually. Read-only on Jira; runs an interactive first-time setup (site, board, statuses, Confluence space, output language).
 ---
 
 # infra-release
 
-Fecha um board Jira em ciclos de release: produz uma release **para stakeholders** (não para o
-time técnico), um roadmap do que vem aí, e um texto de Slack pronto pra postar.
+Closes a Jira board in release cycles: produces a **stakeholder** release (not a tech report),
+a roadmap of what's coming, and a ready-to-post Slack announcement.
 
-**Garantias:** Read-only no Jira (nunca transiciona/arquiva/edita). Confluence sempre em **rascunho**.
-Slack **nunca** é postado automaticamente.
+**Guarantees:** Read-only on Jira (never transitions/archives/edits). Confluence always as a
+**draft**. Slack is **never** posted automatically.
 
-## Config (por usuário, fora do repo)
+## Config (per user, outside the repo)
 
-Arquivo: `${XDG_CONFIG_HOME:-$HOME/.config}/infra-release/config.yaml`.
-Formato em `config.example.yaml`. Campos:
+File: `${XDG_CONFIG_HOME:-$HOME/.config}/infra-release/config.yaml`.
+Format in `config.example.yaml`. Fields:
 
 ```yaml
-cloudId: ""                       # site Atlassian (UUID)
-jiraBaseUrl: ""                   # ex.: https://yoursite.atlassian.net
-projectKey: ""                    # ex.: OPS
-doneStatusCategory: "Done"        # categoria dos concluídos (entram na release)
+cloudId: ""                       # Atlassian site (UUID)
+jiraBaseUrl: ""                   # e.g. https://yoursite.atlassian.net
+projectKey: ""                    # e.g. OPS
+doneStatusCategory: "Done"        # status category of completed cards (these go into the release)
 inProgressStatusCategory: "In Progress"
-nextStatusName: ""                # status do "vem aí" (ex.: "To Do" / "Ready"); vazio = pular
+nextStatusName: ""                # the "coming up" status (e.g. "To Do" / "Ready"); empty = skip
 confluence:
-  spaceId: ""                     # espaço onde a página é criada
-  parentId: ""                    # folder ou página pai (opcional; vazio = raiz do espaço)
-releaseTitlePrefix: "Release Notes"  # prefixo do título; o título final recebe " — AAAA-MM-DD"
+  spaceId: ""                     # space where the page is created
+  parentId: ""                    # parent folder or page (optional; empty = space root)
+releaseTitlePrefix: "Release Notes"  # title prefix; the final title gets " — YYYY-MM-DD"
+outputLanguage: "English"         # language of the generated release (Confluence + Slack)
 ```
 
-Nada de site/board/espaço fica embutido no skill — tudo vem deste arquivo.
+No site/board/space is baked into the skill — everything comes from this file.
 
-## Fase de Setup (primeira vez, ou quando o config falta/está incompleto)
+## Setup phase (first run, or when config is missing/incomplete)
 
-Ao iniciar, leia o config. Se não existir ou faltar campo obrigatório
-(`cloudId`, `projectKey`, `confluence.spaceId`), rode o setup:
+On start, read the config. If it doesn't exist or a required field is missing
+(`cloudId`, `projectKey`, `confluence.spaceId`, `outputLanguage`), run setup:
 
-1. **Site Atlassian:** chame `getAccessibleAtlassianResources`. Se houver mais de um site,
-   liste e peça o usuário escolher → grave `cloudId` e `jiraBaseUrl` (a `url` do recurso).
-2. **Board/projeto:** ofereça `getVisibleJiraProjects` (ou peça a chave) → grave `projectKey`.
-3. **Mapa de status:** confirme `doneStatusCategory`/`inProgressStatusCategory` (defaults acima).
-   Para o "vem aí", liste os status do projeto (use `getTransitionsForJiraIssue` num card de
-   exemplo, com `includeUnavailableTransitions: true`) e peça qual representa "selecionado para
-   entrega" → grave `nextStatusName` (ou deixe vazio para pular essa seção).
-4. **Confluence:** chame `getConfluenceSpaces` → peça o espaço → grave `spaceId`. Pergunte o
-   `parentId` (folder/página pai) ou deixe vazio.
-5. **Título:** pergunte o `releaseTitlePrefix` (default "Release Notes").
-6. Grave o `config.yaml` (crie o diretório com `mkdir -p`) e mostre o resumo da config ao usuário.
+1. **Atlassian site:** call `getAccessibleAtlassianResources`. If there's more than one site,
+   list them and ask the user to choose → store `cloudId` and `jiraBaseUrl` (the resource `url`).
+2. **Board/project:** offer `getVisibleJiraProjects` (or ask for the key) → store `projectKey`.
+3. **Status mapping:** confirm `doneStatusCategory`/`inProgressStatusCategory` (defaults above).
+   For "coming up", list the project statuses (use `getTransitionsForJiraIssue` on a sample card
+   with `includeUnavailableTransitions: true`) and ask which one represents "selected for delivery"
+   → store `nextStatusName` (or leave empty to skip that section).
+4. **Confluence:** call `getConfluenceSpaces` → ask for the space → store `spaceId`. Ask for the
+   `parentId` (parent folder/page) or leave it empty.
+5. **Title:** ask for `releaseTitlePrefix` (default "Release Notes").
+6. **Output language:** ask which language the release communication (Confluence page + Slack text)
+   should be written in → store `outputLanguage` (default "English").
+7. Write `config.yaml` (create the dir with `mkdir -p`) and show the user a summary.
 
-Reconfigurar = apagar o `config.yaml` e rodar de novo, ou pedir explicitamente "refazer setup".
+Reconfigure = delete `config.yaml` and run again, or explicitly ask to "redo setup".
 
-## Procedimento (5 fases, com checkpoints ✋)
+## Procedure (5 phases, with checkpoints ✋)
 
-Todos os valores entre `{...}` vêm do config.
+All `{...}` values come from the config. **Write every human-facing string in the generated
+release — section headings included — in `{outputLanguage}`, with correct orthography and
+diacritics (never strip accents).**
 
-### Fase 0 — Escopo ✋
-Conte os concluídos (`computeIssueCount`) e confirme: "fechar tudo que está concluído no board
-`{projectKey}` agora?". Só siga com o OK.
+### Phase 0 — Scope ✋
+Count the completed cards (`computeIssueCount`) and confirm: "close everything completed in board
+`{projectKey}` now?". Only proceed with the OK.
 
-### Fase 1 — Coleta (read-only)
-Rode as 3 queries de `reference/jql-recipes.md`, substituindo os placeholders pelo config
-(`{projectKey}`, `{nextStatusName}` etc.). Pagine e extraia com `jq` conforme o guia.
-Filtre por `statusCategory`, nunca por nome de status localizado.
+### Phase 1 — Collect (read-only)
+Run the three queries in `reference/jql-recipes.md`, substituting placeholders from the config
+(`{projectKey}`, `{nextStatusName}`, etc.). Paginate and extract with `jq` per the guide.
+Filter by `statusCategory`, never by a localized status name.
 
-### Fase 2 — Síntese
-Aplique `reference/business-translation.md`: agrupe os concluídos por tema de negócio e escreva
-o TL;DR + parágrafos por tema (não-técnicos, quantificados). Monte o roadmap a partir de
-EM_ANDAMENTO + SELECIONADOS. Cards sem enquadramento confiável vão para "Revisar".
+### Phase 2 — Synthesize
+Apply `reference/business-translation.md`: group completed cards by business theme and write the
+TL;DR + per-theme paragraphs (non-technical, quantified) in `{outputLanguage}`. Build the roadmap
+from IN_PROGRESS + SELECTED. Cards you can't confidently theme go to a "Review" note.
 
-### Fase 3 — Confluence (draft) ✋
-Preencha `templates/confluence-release.html` (marcador `{{RELEASE_TITLE}}` = `{releaseTitlePrefix}`)
-e crie a página com `createConfluencePage`: `spaceId = {confluence.spaceId}`,
-`parentId = {confluence.parentId}` (omita se vazio), `contentFormat: html`, `status: draft`,
-título = `"{releaseTitlePrefix} — {AAAA-MM-DD}"`.
-**Idempotência:** antes de criar, procure página com o mesmo título; se existir,
-`updateConfluencePage` no rascunho em vez de duplicar.
-Se o `parentId` for uma folder e a API recusar, crie/use uma página índice de releases sob a folder
-e aninhe a release nela.
-Apresente o link do rascunho e peça revisão antes de publicar.
+### Phase 3 — Confluence (draft) ✋
+Fill `templates/confluence-release.html` (marker `{{RELEASE_TITLE}}` = `{releaseTitlePrefix}`),
+translating the template's section headings and labels into `{outputLanguage}`. Create the page
+with `createConfluencePage`: `spaceId = {confluence.spaceId}`, `parentId = {confluence.parentId}`
+(omit if empty), `contentFormat: html`, `status: draft`,
+title = `"{releaseTitlePrefix} — {YYYY-MM-DD}"`.
+**Idempotency:** before creating, look for a page with the same title; if it exists,
+`updateConfluencePage` on the draft instead of duplicating.
+If `parentId` is a folder and the API rejects it, create/use a releases index page under the folder
+and nest the release there.
+Present the draft link and ask for review before publishing.
 
-### Fase 4 — Slack (manual) ✋
-Preencha `templates/slack-announcement.md` com a URL da página e apresente o resultado **dentro de
-um bloco de código** para o usuário copiar. **Não poste.**
+### Phase 4 — Slack (manual) ✋
+Fill `templates/slack-announcement.md` with the page URL (labels in `{outputLanguage}`) and present
+the result **inside a code block** for the user to copy. **Do not post.**
 
-### Fase 5 — Limpeza guiada ✋
-Entregue o conteúdo de `reference/board-clear-runbook.md` (substituindo `{projectKey}` e
-`{jiraBaseUrl}`): verificação de plano + caminho A/B + reacesso. O skill **não** transiciona nem
-arquiva nada.
+### Phase 5 — Guided cleanup ✋
+Deliver the contents of `reference/board-clear-runbook.md` (substituting `{projectKey}` and
+`{jiraBaseUrl}`): plan check + path A/B + re-access. The skill does **not** transition or archive
+anything.
 
-## Trilhos de segurança
-- NUNCA chamar transição/edição/arquivamento de issue no Jira.
-- NUNCA postar no Slack.
-- Confluence só como `draft` até OK explícito.
+## Safety rails
+- NEVER call issue transition/edit/archive on Jira.
+- NEVER post to Slack.
+- Confluence only as `draft` until explicit OK.

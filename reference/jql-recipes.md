@@ -1,51 +1,51 @@
-# JQL recipes — coleta da Fase 1
+# JQL recipes — collection (Phase 1)
 
-Substitua `{{PROJECT_KEY}}` e `{{NEXT_STATUS}}` pelos valores do config
-(`projectKey`, `nextStatusName`). Use o `cloudId` do config nas chamadas.
+Replace `{{PROJECT_KEY}}` and `{{NEXT_STATUS}}` with config values (`projectKey`, `nextStatusName`).
+Use the `cloudId` from the config on every call.
 
-> **Sempre filtre por categoria de status, não por nome.** Em sites localizados, buscar pelo nome
-> traduzido do status (ex.: `status = "Em andamento"`) pode retornar vazio. `statusCategory` é estável.
+> **Always filter by status category, not by name.** On localized sites, searching by a translated
+> status name (e.g. `status = "Em andamento"`) can return empty. `statusCategory` is stable.
 
 ## Queries
 
-**CONCLUÍDOS** (entram na release):
+**COMPLETED** (go into the release):
 ```
 project = {{PROJECT_KEY}} AND statusCategory = Done ORDER BY resolutiondate DESC
 ```
 
-**EM_ANDAMENTO** (roadmap — "está rolando"):
+**IN_PROGRESS** (roadmap — "in flight"):
 ```
 project = {{PROJECT_KEY}} AND statusCategory = "In Progress" ORDER BY updated DESC
 ```
 
-**SELECIONADOS** (roadmap — "vem aí"; só se `nextStatusName` estiver definido):
+**SELECTED** (roadmap — "coming up"; only if `nextStatusName` is set):
 ```
 project = {{PROJECT_KEY}} AND status = "{{NEXT_STATUS}}" ORDER BY updated DESC
 ```
 
-## Campos a pedir
+## Fields to request
 
 `["key","summary","description","issuetype","labels","components","assignee","resolutiondate","parent","updated"]`
 
-Body em markdown: passar `responseContentFormat: "markdown"` para descrições legíveis.
+Markdown body: pass `responseContentFormat: "markdown"` for readable descriptions.
 
-## Paginação + extração
+## Pagination + extraction
 
-1. Chamar `searchJiraIssuesUsingJql` com `maxResults: 100`.
-2. Se a resposta estourar o limite de tokens do tool, ela é salva em arquivo automaticamente —
-   ler do arquivo com `jq` em vez de despejar no contexto.
-3. Repetir com `nextPageToken` até `pageInfo.hasNextPage = false`.
+1. Call `searchJiraIssuesUsingJql` with `maxResults: 100`.
+2. If the response exceeds the tool's token limit, it is saved to a file automatically —
+   read it with `jq` instead of dumping it into context.
+3. Repeat with `nextPageToken` until `pageInfo.hasNextPage = false`.
 
-Exemplos de extração com jq sobre o arquivo salvo `$F`:
+Examples of `jq` extraction over the saved file `$F`:
 ```bash
-# inventário compacto: chave + tipo + resumo
+# compact inventory: key + type + summary
 jq -r '.issues.nodes[] | "\(.key)\t\(.fields.issuetype.name)\t\(.fields.summary)"' "$F"
-# labels por card (pra tematização)
+# labels per card (for theming)
 jq -r '.issues.nodes[] | "\(.key)\t\(.fields.labels | join(","))"' "$F"
-# contagem por categoria de status (sanidade)
+# count per status category (sanity)
 jq -r '.issues.nodes[] | .fields.status.statusCategory.name' "$F" | sort | uniq -c
 ```
 
-## Contagem (quando precisar do total)
+## Counting (when you need the total)
 
-Usar `computeIssueCount: true` com `maxResults: 1` numa query só pra contar — não combinar com paginação real.
+Use `computeIssueCount: true` with `maxResults: 1` on a count-only query — don't combine it with real pagination.

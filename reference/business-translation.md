@@ -1,43 +1,44 @@
-# Guia de tradução: técnico → impacto de negócio
+# Translation guide: technical → business impact
 
-Aplicar na Fase 2, ao escrever a prosa da release e do roadmap.
+Apply in Phase 2, when writing the release and roadmap prose.
 
-## Regras
+Write the output in the configured `outputLanguage`, with correct orthography and diacritics
+(never strip accents).
 
-1. **Lidera pelo impacto, não pelo mecanismo.** Diga o que mudou para a empresa/cliente,
-   não como foi feito tecnicamente.
-2. **Quantifica quando o card permite.** Puxe números reais das descrições ($/%/tempo).
-3. **Zero jargão na prosa principal.** Sem nomes de ferramentas internas, siglas de infra ou
-   termos de implementação. Se um termo for inevitável, traduza entre parênteses em linguagem
-   comum. Jargão só sobrevive no apêndice de rastreabilidade.
-4. **Agrupa por tema de negócio.** Use `labels`/`components` primeiro; fallback por palavra-chave
-   no resumo/descrição.
-5. **Uma frase de "por que importa"** por tema: o benefício pra empresa/cliente, não pro time.
-6. **Tom:** executivo, conciso, confiante. Escreva no idioma do board (PT-BR com acentuação
-   correta quando for o caso).
-7. **Nunca invente impacto.** Card sem evidência de benefício → nota "Revisar" para o dono decidir.
+## Rules
 
-## Temas-semente (ajuste por board)
+1. **Lead with impact, not mechanism.** Say what changed for the company/customer, not how it was
+   done technically.
+2. **Quantify when the card allows.** Pull real numbers from the descriptions ($/%/time).
+3. **Zero jargon in the main prose.** No internal tool names, infra acronyms, or implementation
+   terms. If a term is unavoidable, translate it in parentheses in plain language. Jargon only
+   survives in the traceability appendix.
+4. **Group by business theme.** Use `labels`/`components` first; fall back to keywords in the
+   summary/description.
+5. **One "why it matters" sentence** per theme: the benefit to the company/customer, not the team.
+6. **Tone:** executive, concise, confident.
+7. **Never invent impact.** A card with no evidence of benefit → a "Review" note for the owner to decide.
 
-| Tema | Emoji | Pega cards sobre… |
-|------|-------|-------------------|
-| Custo / Eficiência | 💰 | redução de gastos, otimização de recursos, automação que poupa trabalho |
-| Segurança & Conformidade | 🔒 | controle de acesso, proteção de dados, correções de vulnerabilidade, auditoria |
-| Confiabilidade | 🛡️ | estabilidade, recuperação de falhas, redução de incidentes |
-| Performance | ⚡ | velocidade, latência, capacidade, tempo de resposta |
-| Plataforma / Experiência | 🧱 | fundações, novas capacidades, melhorias de fluxo para usuários/times |
+## Seed themes (adjust per board)
 
-Estes temas são um ponto de partida. Adapte os nomes ao vocabulário do board em questão.
+| Theme | Emoji | Catches cards about… |
+|-------|-------|----------------------|
+| Cost / Efficiency | 💰 | spend reduction, resource optimization, automation that saves work |
+| Security & Compliance | 🔒 | access control, data protection, vulnerability fixes, auditing |
+| Reliability | 🛡️ | stability, failure recovery, incident reduction |
+| Performance | ⚡ | speed, latency, capacity, response time |
+| Platform / Experience | 🧱 | foundations, new capabilities, workflow improvements for users/teams |
 
-Heurística de fallback: se nenhum label casar, classifique pela primeira palavra-chave do resumo;
-se ainda ambíguo, escolha o tema do *benefício predominante* (ex.: uma melhoria que derruba uso de
-CPU é Performance, mas se o card a enquadra como economia, é Custo).
+These themes are a starting point. Adapt the names to the board's vocabulary.
 
-## Exemplos (técnico → negócio)
+Fallback heuristic: if no label matches, classify by the first keyword in the summary; if still
+ambiguous, pick the theme of the *predominant benefit* (e.g. a change that cuts CPU usage is
+Performance, but if the card frames it as savings, it's Cost).
 
-- "Padronizar etiquetagem de custos na nuvem" → "Deixamos os relatórios financeiros de
-  infraestrutura mais simples e confiáveis."
-- "Configurar domínio de cookie compartilhado entre subdomínios" → "O login passou a funcionar de
-  forma fluida entre os diferentes endereços do produto."
-- "Adicionar índice que resolve CPU a 90%" → "Eliminamos um gargalo que sobrecarregava o banco,
-  deixando as consultas mais rápidas e o sistema mais estável."
+## Examples (technical → business)
+
+- "Standardize cloud cost tagging" → "We made infrastructure cost reports simpler and more reliable."
+- "Configure a shared cookie domain across subdomains" → "Login now works smoothly across the
+  product's different addresses."
+- "Add an index that resolves CPU at 90%" → "We removed a bottleneck that was overloading the
+  database, making queries faster and the system more stable."

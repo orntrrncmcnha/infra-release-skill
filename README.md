@@ -1,47 +1,51 @@
 # infra-release-skill
 
-Skill do Claude Code para **fechar um board Jira em ciclos de release** e produzir uma
-**release para stakeholders** no Confluence, um **roadmap** do que vem aí, e um **texto de Slack**
-pronto para postar — sem passar card a card e sem virar relatório técnico.
+A Claude Code skill that **closes a Jira board in release cycles** and produces a
+**stakeholder release** in Confluence, a **roadmap** of what's coming, and a ready-to-post
+**Slack announcement** — without going card by card and without reading like a tech report.
 
-Funciona com **qualquer board Jira**: na primeira vez, o skill faz um **setup interativo**
-(descobre o site Atlassian, pergunta o board, os status e o espaço do Confluence) e grava a
-configuração num arquivo por usuário. Nada de board/site/espaço fica embutido no skill.
+Works with **any Jira board**: on the first run, the skill runs an **interactive setup**
+(discovers the Atlassian site, asks for the board, the statuses, the Confluence space, and the
+output language) and stores the configuration in a per-user file. Nothing about a board/site/space
+is baked into the skill.
 
-## O que ele faz
+## What it does
 
-1. Lê os cards **concluídos** do board (read-only, via MCP Atlassian).
-2. Traduz o trabalho técnico em **impacto de negócio**, agrupado por tema.
-3. Cria uma **página de release** no Confluence como **rascunho**.
-4. Gera um **anúncio de Slack** (mrkdwn) para você postar manualmente.
-5. Entrega um **runbook de limpeza guiada** do board + como **reacessar** os cards depois.
+1. Reads the board's **completed** cards (read-only, via the Atlassian MCP).
+2. Translates the technical work into **business impact**, grouped by theme.
+3. Creates a **release page** in Confluence as a **draft**.
+4. Generates a **Slack announcement** (mrkdwn) for you to post manually.
+5. Hands you a **guided cleanup runbook** for the board + how to **re-access** the cards later.
 
-## Garantias
+The release output (Confluence page + Slack text) is written in the **language you choose during
+setup**; the skill files themselves are in English.
 
-- **Read-only no Jira:** nunca transiciona, arquiva ou edita issues.
-- **Confluence draft-first:** a página nasce como rascunho até seu OK.
-- **Slack manual:** o skill nunca posta sozinho.
+## Guarantees
 
-## Instalação
+- **Read-only on Jira:** never transitions, archives, or edits issues.
+- **Confluence draft-first:** the page starts as a draft until your OK.
+- **Slack manual:** the skill never posts on its own.
+
+## Install
 
 ```bash
 ./install.sh
 ```
-Cria um symlink em `~/.claude/skills/infra-release`. Reinicie a sessão do Claude Code.
+Creates a symlink at `~/.claude/skills/infra-release`. Restart your Claude Code session.
 
-## Uso
+## Usage
 
 ```
 /infra-release
 ```
-Na primeira vez, responda o setup. A config fica em
-`${XDG_CONFIG_HOME:-$HOME/.config}/infra-release/config.yaml` (veja `config.example.yaml`).
-Para reconfigurar, apague esse arquivo ou peça "refazer setup".
+On the first run, answer the setup. The config lives at
+`${XDG_CONFIG_HOME:-$HOME/.config}/infra-release/config.yaml` (see `config.example.yaml`).
+To reconfigure, delete that file or ask to "redo setup".
 
-## Estrutura
+## Layout
 
-- `SKILL.md` — procedimento + setup + esquema de config
-- `config.example.yaml` — formato da configuração por usuário
-- `reference/` — queries JQL, guia de tradução, runbook de limpeza
-- `templates/` — HTML da página Confluence, mrkdwn do Slack
-- `docs/` — SPEC e PLAN
+- `SKILL.md` — procedure + setup + config schema
+- `config.example.yaml` — per-user configuration format
+- `reference/` — JQL recipes, translation guide, cleanup runbook
+- `templates/` — Confluence page HTML, Slack mrkdwn
+- `docs/` — SPEC and PLAN

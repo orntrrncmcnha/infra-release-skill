@@ -1,17 +1,18 @@
-# Exemplo de config do skill infra-release.
-# Copie para:  ${XDG_CONFIG_HOME:-$HOME/.config}/infra-release/config.yaml
-# (ou deixe o skill gerar no primeiro setup). NÃO commite seu config real.
+# Example config for the infra-release skill.
+# Copy to:  ${XDG_CONFIG_HOME:-$HOME/.config}/infra-release/config.yaml
+# (or let the skill generate it on first setup). Do NOT commit your real config.
 
-cloudId: ""                          # site Atlassian (UUID). O skill descobre via getAccessibleAtlassianResources.
-jiraBaseUrl: ""                      # ex.: https://yoursite.atlassian.net
-projectKey: ""                       # ex.: OPS
+cloudId: ""                          # Atlassian site (UUID). The skill discovers it via getAccessibleAtlassianResources.
+jiraBaseUrl: ""                      # e.g. https://yoursite.atlassian.net
+projectKey: ""                       # e.g. OPS
 
-doneStatusCategory: "Done"           # categoria dos concluídos (entram na release)
+doneStatusCategory: "Done"           # status category of completed cards (these go into the release)
 inProgressStatusCategory: "In Progress"
-nextStatusName: ""                   # status do "vem aí" (ex.: "To Do" / "Ready"); vazio = pular a seção
+nextStatusName: ""                   # the "coming up" status (e.g. "To Do" / "Ready"); empty = skip that section
 
 confluence:
-  spaceId: ""                        # espaço onde a página é criada
-  parentId: ""                       # folder ou página pai (opcional; vazio = raiz do espaço)
+  spaceId: ""                        # space where the page is created
+  parentId: ""                       # parent folder or page (optional; empty = space root)
 
-releaseTitlePrefix: "Release Notes"  # prefixo do título; o título final recebe " — AAAA-MM-DD"
+releaseTitlePrefix: "Release Notes"  # title prefix; the final title gets " — YYYY-MM-DD"
+outputLanguage: "English"            # language of the generated release (Confluence + Slack), e.g. "English", "Português"

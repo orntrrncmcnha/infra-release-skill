@@ -1,93 +1,93 @@
 # infra-release-skill — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development ou superpowers:executing-plans. Steps usam checkbox (`- [ ]`).
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development or superpowers:executing-plans. Steps use checkbox (`- [ ]`) syntax.
 
-**Goal:** Construir o skill `infra-release` — fecha um board Jira gerando uma release de
-stakeholders no Confluence (rascunho), um roadmap, e um texto de Slack pra postar manual,
-mantendo-se read-only no Jira. Genérico: site/board/espaço vêm de um setup interativo.
+**Goal:** Build the `infra-release` skill — closes a Jira board by generating a stakeholder release
+in Confluence (draft), a roadmap, and a Slack text to post manually, while staying read-only on Jira.
+Generic: site/board/space/language come from an interactive setup.
 
-**Architecture:** Skill procedural nativo do Claude Code. `SKILL.md` orquestra o setup + 5 fases
-(escopo → coleta via MCP → síntese → publicação draft no Confluence → Slack manual → limpeza
-guiada). Templates e guias em `templates/` e `reference/`. Sem runtime próprio: o executor é o
-Claude usando o MCP do Atlassian. Config por usuário fica fora do repo.
+**Architecture:** A native Claude Code procedural skill. `SKILL.md` orchestrates the setup + 5 phases
+(scope → collect via MCP → synthesize → publish draft to Confluence → manual Slack → guided cleanup).
+Templates and guides live in `templates/` and `reference/`. No runtime of its own: the executor is
+Claude using the Atlassian MCP. Per-user config lives outside the repo.
 
-**Tech Stack:** Markdown, HTML (template Confluence), Bash (install.sh), MCP Atlassian.
-Verificação via `grep`, `bash -n`, `python3` (stdlib), e instalação real do symlink.
+**Tech Stack:** Markdown, HTML (Confluence template), Bash (install.sh), Atlassian MCP.
+Verification via `grep`, `bash -n`, `python3` (stdlib), and a real symlink install.
 
 ## Global Constraints
 
-- **Read-only no Jira:** nunca transiciona/arquiva/edita issues.
-- **Confluence draft-first:** páginas com `status: draft` até OK do usuário.
-- **Slack:** nunca posta automaticamente.
-- **Sem hardcode:** nenhum site/board/espaço/projeto específico no skill — tudo vem do config
-  por usuário (`${XDG_CONFIG_HOME:-$HOME/.config}/infra-release/config.yaml`).
-- **Status por categoria:** filtrar por `statusCategory`, nunca por nome localizado.
-- **Idempotência:** se já existe página com o mesmo título, atualizar o rascunho (não duplicar).
-- Repo git próprio.
+- **Read-only on Jira:** never transitions/archives/edits issues.
+- **Confluence draft-first:** pages with `status: draft` until the user's OK.
+- **Slack:** never posts automatically.
+- **No hardcoding:** no specific site/board/space/project in the skill — all from the per-user config
+  (`${XDG_CONFIG_HOME:-$HOME/.config}/infra-release/config.yaml`).
+- **Skill files in English; release output in the configured `outputLanguage`** (correct diacritics).
+- **Status by category:** filter by `statusCategory`, never by a localized name.
+- **Idempotency:** if a page with the same title exists, update the draft (don't duplicate).
+- Standalone git repo.
 
 ## File Structure
 
-| Arquivo | Responsabilidade |
-|---------|------------------|
-| `README.md` | O que é, como instalar, como rodar |
-| `.gitignore` | Lixo de SO/editor + `config.yaml` local |
-| `config.example.yaml` | Formato da config por usuário |
-| `install.sh` | Symlink `~/.claude/skills/infra-release` → repo + validação |
-| `reference/jql-recipes.md` | Queries JQL (placeholders) + paginação + jq |
-| `reference/business-translation.md` | Regras técnico→negócio + temas-semente genéricos |
-| `reference/board-clear-runbook.md` | Limpeza guiada (placeholders) + reacesso |
-| `templates/confluence-release.html` | Template HTML (TL;DR/temas/apêndice/roadmap) |
-| `templates/slack-announcement.md` | Template mrkdwn |
-| `SKILL.md` | Núcleo: setup interativo + esquema de config + 5 fases |
-| `docs/SPEC.md`, `docs/PLAN.md` | Design e plano |
+| File | Responsibility |
+|------|----------------|
+| `README.md` | What it is, how to install, how to run |
+| `.gitignore` | OS/editor junk + local `config.yaml` |
+| `config.example.yaml` | Per-user config format |
+| `install.sh` | Symlink `~/.claude/skills/infra-release` → repo + validation |
+| `reference/jql-recipes.md` | JQL queries (placeholders) + pagination + jq |
+| `reference/business-translation.md` | Technical→business rules + generic seed themes |
+| `reference/board-clear-runbook.md` | Guided cleanup (placeholders) + re-access |
+| `templates/confluence-release.html` | HTML template (TL;DR/themes/appendix/roadmap) |
+| `templates/slack-announcement.md` | mrkdwn template |
+| `SKILL.md` | Core: interactive setup + config schema + 5 phases |
+| `docs/SPEC.md`, `docs/PLAN.md` | Design and plan |
 
 ## Tasks
 
 ### Task 1 — Scaffold + git
-- [x] `git init` com identidade do repo; `.gitignore` (inclui `config.yaml`); `README.md` genérico.
-- Verificação: README cita "Read-only no Jira", "draft-first", "Slack manual", "/infra-release",
-  "setup interativo". Commit.
+- [x] `git init`; `.gitignore` (includes `config.yaml`); English `README.md`.
+- Verify: README mentions "Read-only on Jira", "draft-first", "Slack manual", "/infra-release",
+  "interactive setup". Commit.
 
-### Task 2 — Config genérico
-- [x] `config.example.yaml` com todos os campos (cloudId, jiraBaseUrl, projectKey, mapa de status,
-  confluence.spaceId/parentId, releaseTitlePrefix), todos vazios/default.
-- Verificação: `grep` dos campos. Commit.
+### Task 2 — Generic config
+- [x] `config.example.yaml` with all fields (cloudId, jiraBaseUrl, projectKey, status mapping,
+  confluence.spaceId/parentId, releaseTitlePrefix, outputLanguage), all empty/default.
+- Verify: `grep` the fields. Commit.
 
 ### Task 3 — reference/jql-recipes.md
-- [x] 3 queries com `{{PROJECT_KEY}}`/`{{NEXT_STATUS}}`; nota de `statusCategory` vs nome localizado;
-  paginação + exemplos de `jq`.
-- Verificação: `grep` por `{{PROJECT_KEY}}`, `statusCategory = Done`, `nextPageToken`, `jq -r`. Commit.
+- [x] 3 queries with `{{PROJECT_KEY}}`/`{{NEXT_STATUS}}`; the `statusCategory` vs localized-name note;
+  pagination + `jq` examples.
+- Verify: `grep` for `{{PROJECT_KEY}}`, `statusCategory = Done`, `nextPageToken`, `jq -r`. Commit.
 
 ### Task 4 — reference/business-translation.md
-- [x] Regras (impacto > mecanismo, quantificar, zero jargão, agrupar por tema, nunca inventar);
-  temas-semente genéricos; exemplos genéricos (sem nomes próprios).
-- Verificação: `grep` por "Lidera pelo impacto", "Zero jargão", "Temas-semente", "Revisar". Commit.
+- [x] Rules (impact > mechanism, quantify, zero jargon, group by theme, never invent); generic seed
+  themes; generic examples (no proper nouns); render in `outputLanguage`.
+- Verify: `grep` for "Lead with impact", "Zero jargon", "Seed themes", "Review". Commit.
 
 ### Task 5 — reference/board-clear-runbook.md
-- [x] Verificação de plano + Caminho A (arquivar) + Caminho B (label `released`) + reacesso,
-  com `{{PROJECT_KEY}}`/`{{JIRA_BASE_URL}}`.
-- Verificação: `grep` por "Passo 0", "Caminho A", "Caminho B", "Reacesso". Commit.
+- [x] Plan check + Path A (archive) + Path B (`released` label) + re-access, with
+  `{{PROJECT_KEY}}`/`{{JIRA_BASE_URL}}`.
+- Verify: `grep` for "Step 0", "Path A", "Path B", "Re-access". Commit.
 
 ### Task 6 — templates
-- [x] `confluence-release.html` com marcadores `{{RELEASE_TITLE}}/{{PERIODO}}/{{TLDR_ITEMS}}/`
-  `{{TEMAS}}/{{ROADMAP}}/{{APENDICE_ROWS}}/{{REVISAR}}`; `slack-announcement.md` com
-  `{{RELEASE_TITLE}}/{{PERIODO}}/{{BULLETS}}/{{CONFLUENCE_URL}}`.
-- Verificação: `grep` dos marcadores + parse HTML (`python3 html.parser`). Commit.
+- [x] `confluence-release.html` with markers `{{RELEASE_TITLE}}/{{PERIOD}}/{{TLDR_ITEMS}}/`
+  `{{THEMES}}/{{ROADMAP}}/{{APPENDIX_ROWS}}/{{REVIEW}}`; `slack-announcement.md` with
+  `{{RELEASE_TITLE}}/{{PERIOD}}/{{BULLETS}}/{{CONFLUENCE_URL}}`. Headings to be localized.
+- Verify: `grep` the markers + HTML parse (`python3 html.parser`). Commit.
 
 ### Task 7 — SKILL.md
-- [x] Frontmatter `name: infra-release` + esquema de config + Fase de Setup interativo + 5 fases
-  referenciando os arquivos e os valores do config; trilhos de segurança.
-- Verificação: `grep` por `^name: infra-release`, `^description:`, "Fase de Setup", "Fase 0..5",
-  "status: draft", "Read-only no Jira"; todos os arquivos referenciados existem. Commit.
+- [x] Frontmatter `name: infra-release` + config schema + interactive Setup phase (incl. output
+  language) + 5 phases referencing the files and config values; safety rails.
+- Verify: `grep` for `^name: infra-release`, `^description:`, "Setup phase", "Phase 0..5",
+  "status: draft", "Read-only on Jira"; all referenced files exist. Commit.
 
 ### Task 8 — install.sh + smoke test
-- [x] Symlink `~/.claude/skills/infra-release` → repo, com validação de `SKILL.md`/`name:`,
-  idempotente.
-- Verificação: `bash -n`; rodar `./install.sh`; symlink existe; `SKILL.md` acessível; rerun OK. Commit.
+- [x] Symlink `~/.claude/skills/infra-release` → repo, with `SKILL.md`/`name:` validation, idempotent.
+- Verify: `bash -n`; run `./install.sh`; symlink exists; `SKILL.md` reachable; rerun OK. Commit.
 
-## Verificação final
+## Final verification
 
-- [x] Nenhum site/board/espaço específico nem nome próprio nos arquivos versionados
-  (`grep -ri` por termos específicos retorna vazio).
-- [x] Skill discoverable como `infra-release`.
-- [ ] **Teste de aceite E2E:** rodar `/infra-release` num board real, passar pelo setup e gerar o rascunho.
+- [x] No specific site/board/space/proper-noun in versioned files
+  (`grep -ri` for specific terms returns empty).
+- [x] Skill discoverable as `infra-release`.
+- [ ] **E2E acceptance:** run `/infra-release` on a real board, go through setup, generate the draft.

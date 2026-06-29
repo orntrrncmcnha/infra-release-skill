@@ -1,38 +1,38 @@
-# Runbook — limpeza guiada do board + reacesso
+# Runbook — guided board cleanup + re-access
 
-Substitua `{{PROJECT_KEY}}` e `{{JIRA_BASE_URL}}` pelos valores do config.
-O skill é **read-only no Jira**: ele só entrega estes passos; **você (admin) executa**.
+Replace `{{PROJECT_KEY}}` and `{{JIRA_BASE_URL}}` with config values.
+The skill is **read-only on Jira**: it only hands you these steps; **you (the admin) execute them**.
 
-## Passo 0 — verificar o plano (faça 1 vez)
+## Step 0 — check the plan (do this once)
 
-No issue navigator, abra `project = {{PROJECT_KEY}} AND statusCategory = Done` e cheque se aparece
-**Bulk change → Archive issues**.
-- **Aparece** → use o **Caminho A** (Premium/Enterprise).
-- **Não aparece** → plano Standard, use o **Caminho B**.
+In the issue navigator, open `project = {{PROJECT_KEY}} AND statusCategory = Done` and check whether
+**Bulk change → Archive issues** appears.
+- **It appears** → use **Path A** (Premium/Enterprise).
+- **It doesn't** → Standard plan, use **Path B**.
 
-## Caminho A — arquivar em massa (recomendado)
+## Path A — bulk archive (recommended)
 
 1. Issue navigator → `project = {{PROJECT_KEY}} AND statusCategory = Done`.
-2. Selecionar tudo → **Bulk change → Archive issues** → confirmar.
+2. Select all → **Bulk change → Archive issues** → confirm.
 
-Por que arquivar (não deletar): issues arquivados somem do board **e** das buscas normais, mas
-continuam **recuperáveis**. Bônus: como saem do JQL `statusCategory = Done`, o **próximo fechamento
-não os repesca** — é o que faz o modelo "fechar tudo que está concluído agora" funcionar sem
-precisar guardar estado entre rodadas.
+Why archive (not delete): archived issues disappear from the board **and** from normal searches, but
+stay **recoverable**. Bonus: since they drop out of `statusCategory = Done`, the **next closing
+won't re-pick them** — that's what makes the "close everything completed now" model work without
+keeping state between runs.
 
-## Caminho B — fallback (Standard, sem arquivamento)
+## Path B — fallback (Standard, no archiving)
 
-1. Bulk edit: adicionar o label `released` a todos os concluídos.
-2. Board settings → ajustar o **sub-filtro** para esconder `statusCategory = Done` com esse label
-   (ou esconder concluídos por idade).
-3. Nas próximas rodadas, a query de concluídos vira:
+1. Bulk edit: add the label `released` to all completed cards.
+2. Board settings → adjust the **sub-filter** to hide `statusCategory = Done` with that label
+   (or hide completed by age).
+3. On later runs, the completed query becomes:
    `project = {{PROJECT_KEY}} AND statusCategory = Done AND labels != released`.
 
-## Reacesso (depois que sumirem)
+## Re-access (after they disappear)
 
-1. **Página do Confluence** — fonte canônica: por tema, com link de cada card.
-2. **Jira** — nada é deletado:
-   - *Archived issues* (view de admin) para ver/restaurar (Caminho A).
-   - Qualquer card abre por `{{JIRA_BASE_URL}}/browse/{{PROJECT_KEY}}-XXX`, mesmo arquivado.
-   - Caminho B: `project = {{PROJECT_KEY}} AND labels = released`.
-3. **Índice de releases** no Confluence — histórico de todos os fechamentos.
+1. **The Confluence page** — canonical source: by theme, with a link per card.
+2. **Jira** — nothing is deleted:
+   - *Archived issues* (admin view) to see/restore (Path A).
+   - Any card opens via `{{JIRA_BASE_URL}}/browse/{{PROJECT_KEY}}-XXX`, even archived.
+   - Path B: `project = {{PROJECT_KEY}} AND labels = released`.
+3. **The releases index** in Confluence — history of every closing.

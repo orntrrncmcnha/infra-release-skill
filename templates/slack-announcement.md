@@ -1,6 +1,7 @@
-:rocket: *{{RELEASE_TITLE}} — {{PERIODO}}*
+<!-- Labels below are in English; translate them into the configured outputLanguage. -->
+:rocket: *{{RELEASE_TITLE}} — {{PERIOD}}*
 
-Principais entregas do período:
+Top deliveries this cycle:
 {{BULLETS}}
 
-:page_facing_up: Detalhes completos: {{CONFLUENCE_URL}}
+:page_facing_up: Full details: {{CONFLUENCE_URL}}
