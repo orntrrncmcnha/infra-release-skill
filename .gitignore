@@ -6,3 +6,4 @@
 scratch/
 config.yaml
 *.local.yaml
+.superpowers/
