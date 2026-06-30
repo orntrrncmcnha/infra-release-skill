@@ -38,7 +38,7 @@ Creates a symlink at `~/.claude/skills/board-release`. Restart your Claude Code 
 /board-release <profile>
 ```
 With no argument: 0 profiles → setup; 1 → that profile; many → the default or it asks.
-The config lives at `~/.config/board-release/config.yaml`
+The config lives at `${XDG_CONFIG_HOME:-$HOME/.config}/board-release/config.yaml`
 (see `config.example.yaml`).
 
 ## Layout
