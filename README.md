@@ -1,29 +1,28 @@
-# infra-release-skill
+# board-release-skill
 
 A Claude Code skill that **closes a Jira board in release cycles** and produces a
-**stakeholder release** in Confluence, a **roadmap** of what's coming, and a ready-to-post
-**Slack announcement** — without going card by card and without reading like a tech report.
+**stakeholder release** in Confluence (as a draft), a **roadmap** of what's coming, and a
+ready-to-post **Slack announcement** — without going card by card.
 
-Works with **any Jira board**: on the first run, the skill runs an **interactive setup**
-(discovers the Atlassian site, asks for the board, the statuses, the Confluence space, and the
-output language) and stores the configuration in a per-user file. Nothing about a board/site/space
-is baked into the skill.
+Works with **multiple boards** via named **profiles**. On the first run for a board, an interactive
+setup discovers the Atlassian site and asks for the board, statuses, scope, Confluence space,
+language, and themes; everything is stored per user. Nothing about a board is baked into the skill.
 
 ## What it does
 
-1. Reads the board's **completed** cards (read-only, via the Atlassian MCP).
-2. Translates the technical work into **business impact**, grouped by theme.
-3. Creates a **release page** in Confluence as a **draft**.
+1. Reads the board's **completed** cards for the profile's scope (read-only, via the Atlassian MCP).
+2. Translates the technical work into **business impact**, grouped by the profile's themes.
+3. Creates a **release page** in Confluence as a **draft** — you review and publish in the UI.
 4. Generates a **Slack announcement** (mrkdwn) for you to post manually.
 5. Hands you a **guided cleanup runbook** for the board + how to **re-access** the cards later.
 
-The release output (Confluence page + Slack text) is written in the **language you choose during
-setup**; the skill files themselves are in English.
+The release output (Confluence + Slack) is written in each profile's **language**; the skill files
+are in English.
 
 ## Guarantees
 
 - **Read-only on Jira:** never transitions, archives, or edits issues.
-- **Confluence draft-first:** the page starts as a draft until your OK.
+- **Draft only:** the page is created as a draft; the skill never auto-publishes.
 - **Slack manual:** the skill never posts on its own.
 
 ## Install
@@ -31,21 +30,21 @@ setup**; the skill files themselves are in English.
 ```bash
 ./install.sh
 ```
-Creates a symlink at `~/.claude/skills/infra-release`. Restart your Claude Code session.
+Creates a symlink at `~/.claude/skills/board-release`. Restart your Claude Code session.
 
 ## Usage
 
 ```
-/infra-release
+/board-release <profile>
 ```
-On the first run, answer the setup. The config lives at
-`${XDG_CONFIG_HOME:-$HOME/.config}/infra-release/config.yaml` (see `config.example.yaml`).
-To reconfigure, delete that file or ask to "redo setup".
+With no argument: 0 profiles → setup; 1 → that profile; many → the default or it asks.
+The config lives at `~/.config/board-release/config.yaml`
+(see `config.example.yaml`).
 
 ## Layout
 
 - `SKILL.md` — procedure + setup + config schema
-- `config.example.yaml` — per-user configuration format
-- `reference/` — JQL recipes, translation guide, cleanup runbook
+- `config.example.yaml` — profiles config format
+- `reference/` — JQL recipes (scope variants), translation guide, cleanup runbook
 - `templates/` — Confluence page HTML, Slack mrkdwn
 - `docs/` — SPEC and PLAN
