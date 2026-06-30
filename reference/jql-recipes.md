@@ -37,6 +37,8 @@ project = {{PROJECT_KEY}} AND statusCategory = "In Progress" ORDER BY updated DE
 ```
 project = {{PROJECT_KEY}} AND status = "{{NEXT_STATUS}}" ORDER BY updated DESC
 ```
+> Intentional exception to the "filter by category" rule above: `nextStatusName` is a specific
+> custom status, so it is matched by `status =`, not by `statusCategory`.
 
 ## Fields to request
 

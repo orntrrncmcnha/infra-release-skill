@@ -588,15 +588,15 @@ git commit -m "chore: rename repo to board-release-skill" --allow-empty
 
 - [ ] **No stale name anywhere in tracked files**
 
-Run:
+Run (exclude `docs/`, which legitimately documents the rename + legacy import):
 ```bash
 cd /Users/taiar/dev/orn/board-release-skill
-grep -rn 'infra-release' . --exclude-dir=.git | grep -v 'config.yaml' || echo ">>> CLEAN: no infra-release references <<<"
+grep -rn 'infra-release' . --exclude-dir=.git --exclude-dir=docs | grep -v 'config.yaml' || echo ">>> CLEAN: no infra-release references <<<"
 ```
-Expected: `>>> CLEAN <<<` (the only acceptable mention is the legacy-import path `~/.config/infra-release/config.yaml` inside SKILL.md — that one is intentional).
-
-> Note: SKILL.md Setup step 0 intentionally references `~/.config/infra-release/config.yaml` for the
-> legacy import. Confirm the grep's only hits (if any) are that path; everything else must be gone.
+Expected: `>>> CLEAN <<<`. Acceptable mentions that this grep deliberately skips: the legacy-import
+path `~/.config/infra-release/config.yaml` in SKILL.md (intentional), and the historical
+references inside `docs/SPEC.md` and `docs/PLAN.md` (they document the v1→v2 rename and the
+legacy-import feature). Everything else must be gone.
 
 - [ ] **No board-specifics**
 
