@@ -47,7 +47,7 @@ profiles:
     projectKey: "INFRA"
     doneStatusCategory: "Done"
     inProgressStatusCategory: "In Progress"
-    nextStatusName: "Selected for Development"   # empty = skip the "coming up" section
+    nextStatusName: "To Do"        # the "coming up" status; empty = skip the "coming up" section
     confluence:
       spaceId: "..."
       parentId: "..."        # parent page/folder; empty = space root
